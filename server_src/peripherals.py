@@ -30,7 +30,7 @@ class Locks(Peripheral):
             lock_state.open_door()
         if should_unlock is not None:
             lock_state.should_unlock = bool(should_unlock == "True")
-        database.save_user(cursor, self.get_username(req), lock_state=lock_state)
+        database.save_user_lock(cursor, self.get_username(req), lock_state)
         return "Successfully Updated Lock State"
 
     @database.sql_connection
@@ -40,11 +40,11 @@ class Locks(Peripheral):
         #we need to update should_unlock to false for next request
         if lock_state.should_unlock:
             lock_state.should_unlock = False
-        database.save_user(cursor, self.get_username(req), lock_state=lock_state)
+        database.save_user_lock(cursor, self.get_username(req), lock_state)
         return retval
 
     def get_lock_state(self, cursor, req):
-        return database.get_user(cursor, self.get_username(req))[database.LockState.index]
+        return database.get_user(cursor, self.get_username(req))[database.LockState.SqlIndex]
 
 class Colors(Peripheral):
     @database.sql_connection
@@ -55,7 +55,7 @@ class Colors(Peripheral):
             color_state.rgb = json.loads(f"[{rgb_list}]")
         if room_lights is not None:
             color_state.room_lights = bool(room_lights == "True")
-        database.save_user(cursor, self.get_username(req), color_state=color_state)
+        database.save_user_color(cursor, self.get_username(req), color_state)
         return f"Successfully Update Color State"
 
     @database.sql_connection
@@ -63,11 +63,20 @@ class Colors(Peripheral):
         return self.get_color_state(cursor, req).to_json()
 
     def get_color_state(self, cursor, req):
-        return database.get_user(cursor, self.get_username(req))[database.ColorState.index]
+        return database.get_user(cursor, self.get_username(req))[database.ColorState.SqlIndex]
 
 class Camera(Peripheral):
-    def handle_post(self, req):
-        pass
+    
+    @database.sql_connection
+    def handle_post(self, cursor, req):
+        new_camera = database.CameraState()
+        new_camera.save_new_picture(req["data"])
+        database.save_user_camera(cursor, self.get_username(req), new_camera)
+        return "Successfully Uploaded image."
 
-    def handle_get(self, req):
-        pass
+    @database.sql_connection
+    def handle_get(self, cursor, req):
+        return self.get_camera_state(cursor, req).to_json()
+
+    def get_camera_state(self, cursor, req):
+        return database.get_user(cursor, self.get_username(req))[database.CameraState.SqlIndex]

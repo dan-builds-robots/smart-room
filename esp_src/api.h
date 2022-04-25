@@ -21,6 +21,12 @@ LightInfo get_light_info(const char* user) {
     return retval;
 }
 
+void send_image(const char* user, const char* base64_str) {
+    StringBuffer<100> uri = "/sandbox/sc/jblt/smart_home.py?";
+    uri.append_printf("user=%s&change_state=camera", user);
+    auto res = UrlEncodedRequest<>("608dev-2.net").post(uri.c_ptr(), base64_str);
+}
+
 void update_light_switch(const char* user, bool isOn) {
     StringBuffer<100> uri = "/sandbox/sc/jblt/smart_dorm.py?";
     uri.append_printf("user=%s&change_state=lights", user);
