@@ -13,6 +13,8 @@ Notes:
 Need to figure out what to do for images
 All methods explained above require a user=username field
 
+enum class Mode { NORMAL = 0, XMAS = 1, RAINBOW = 2, SHIFTING = 3 } mode;
+
 {'method': 'POST', 'args': ['name'], 'values': {'name': 'jonah'}, 'content-type': 'application/x-www-form-urlencoded', 'is_json': False, 'data': b'', 'form': {}}
 """
 

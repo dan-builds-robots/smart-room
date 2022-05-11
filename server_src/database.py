@@ -8,6 +8,7 @@ class ColorState:
     SqlIndex = 1 #index in sql table
     def __init__(self):
         self.rgb = []
+        self.mode = 0
         self.room_lights = True
     def to_json(self):
         return json.dumps(self, default=vars)
@@ -17,6 +18,7 @@ class LockState:
     SqlIndex = 2
     def __init__(self):
         self.should_unlock = False
+        self.kocked = False
         self.was_opened = datetime.datetime.now()
     def open_door(self):
         self.was_opened = datetime.datetime.now()
@@ -61,7 +63,7 @@ def save_user_color(cursor, user, color_state):
     cursor.execute("UPDATE users_table SET color_state=? WHERE user=?", (pickle.dumps(color_state), user))
 
 def save_user_lock(cursor, user, lock_state):
-    cursor.execute("UPDATE users_table SET color_state=? WHERE user=?", (pickle.dumps(lock_state), user))
+    cursor.execute("UPDATE users_table SET lock_state=? WHERE user=?", (pickle.dumps(lock_state), user))
 
 def save_user_camera(cursor, user, camera_state):
-    cursor.execute("UPDATE users_table SET color_state=? WHERE user=?", (pickle.dumps(camera_state), user))
+    cursor.execute("UPDATE users_table SET camera_state=? WHERE user=?", (pickle.dumps(camera_state), user))

@@ -25,11 +25,13 @@ class Locks(Peripheral):
     @database.sql_connection
     def handle_post(self, cursor, req):
         lock_state = self.get_lock_state(cursor, req)
-        was_opened, should_unlock = get_req_args(req, "was_opened", "should_unlock")
+        was_opened, should_unlock, knocked = get_req_args(req, "was_opened", "should_unlock", "knocked")
         if was_opened is not None:
             lock_state.open_door()
         if should_unlock is not None:
             lock_state.should_unlock = bool(should_unlock == "True")
+        if knocked is not None:
+            lock_state.knocked = bool(knocked == "True")
         database.save_user_lock(cursor, self.get_username(req), lock_state)
         return "Successfully Updated Lock State"
 
@@ -50,11 +52,13 @@ class Colors(Peripheral):
     @database.sql_connection
     def handle_post(self, cursor, req):
         color_state = self.get_color_state(cursor, req)
-        rgb_list, room_lights = get_req_args(req, "rgb", "room_lights")
+        rgb_list, room_lights, mode = get_req_args(req, "rgb", "room_lights", "mode")
         if rgb_list is not None:
             color_state.rgb = json.loads(f"[{rgb_list}]")
         if room_lights is not None:
             color_state.room_lights = bool(room_lights == "True")
+        if mode is not None:
+            color_state.mode = int(mode)
         database.save_user_color(cursor, self.get_username(req), color_state)
         return f"Successfully Update Color State"
 
@@ -70,9 +74,9 @@ class Camera(Peripheral):
     @database.sql_connection
     def handle_post(self, cursor, req):
         new_camera = database.CameraState()
-        new_camera.save_new_picture(req["data"])
+        new_camera.save_new_picture(req["data"].decode('utf-8'))
         database.save_user_camera(cursor, self.get_username(req), new_camera)
-        return "Successfully Uploaded image."
+        return f"Successfully Uploaded image:{req['data']}"
 
     @database.sql_connection
     def handle_get(self, cursor, req):
